@@ -17,3 +17,6 @@ content-type: application/json
   "url":    "afF",
   "likes":  "1414"
 }
+###
+DELETE http://localhost:3001/api/blogs/679d854509dd0930345ec98b 
+
