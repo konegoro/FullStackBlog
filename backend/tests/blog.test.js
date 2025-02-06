@@ -1,6 +1,5 @@
 const { test, describe } = require('node:test')
 const assert = require('node:assert')
-const {fetchData} = require('../utils/fetch')
 const listHelper = require('../utils/list_helper')
 
 
@@ -121,7 +120,7 @@ describe('Favorite blog', () => {
 describe('author which appears most', () => {
     //bring the data from github with axios
     test('5 blogs array', async () => {
-        const {blogs} = require('../utils/dataForTests')
+        const blogs = require('../utils/dataForTests')
         const result = listHelper.mostOftenAuthor(blogs)
         assert.deepStrictEqual(result, {
                                         author: "Robert C. Martin",
@@ -137,7 +136,7 @@ describe('author which appears most', () => {
 
 describe('most popular author', () => {
     test('5 blogs array', () => {
-        const {blogs} = require('../utils/dataForTests')
+        const blogs = require('../utils/dataForTests')
         const result = listHelper.mostPopularAuthor(blogs)
         assert.deepStrictEqual(result,{author: "Edsger W. Dijkstra", likes: 17})
     })
