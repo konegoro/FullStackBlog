@@ -1,0 +1,22 @@
+POST http://localhost:3001/api/blogs/ HTTP/1.1
+content-type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImtvbmVnb3JvIiwiaWQiOiI2N2E3YWI3ZjkxYTczMjZjNzI4MDAyZjkiLCJpYXQiOjE3MzkwNDE2OTMsImV4cCI6MTczOTA0NTI5M30.Zf4WUDmGB9eG1VNh3Z1NXOtXfMwRZfYOmPrcmMM-68A
+
+{
+  "title":  "Seven",
+  "author": "Brad pifia",
+  "url":    "404",
+  "likes":  "1"
+}
+###
+POST http://localhost:3001/api/blogs/ HTTP/1.1
+content-type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImtvbmVnb3JvIiwiaWQiOiI2N2E3YWI3ZjkxYTczMjZjNzI4MDAyZjkiLCJpYXQiOjE3MzkwNDE2OTMsImV4cCI6MTczOTA0NTI5M30.Zf4WUDmGB9eG1VNh3Z1NXOtXfMwRZfYOmPrcmMM-68A
+
+{
+  "title":  "Second one",
+  "author": "Konegoro",
+  "url":    "404",
+  "likes":  "1"
+}
+

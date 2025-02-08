@@ -4,8 +4,9 @@ const supertest = require('supertest')
 const app = require('../app')
 const assert = require('node:assert')
 const Blog = require('../models/blog')
-const initialBlogs = require('../utils/dataForTests')
-const {blogsInDb, nonExistingId} = require('../utils/helper_blog_api')
+const User = require('../models/user')
+const {blogsInDb, nonExistingId, initialBlogs, getToken} = require('./helper_blog_api')
+const {initialUsers, usersInDb} = require('./helper_user_api')
 
 const api = supertest(app)
 
@@ -16,6 +17,16 @@ beforeEach(async () => {
         const blogObject = new Blog(blog)
         await blogObject.save()
     }
+
+    //to POST the blogs with a user wee need initialize the Users
+    await User.deleteMany({})
+
+    for (let user of initialUsers) {
+        await api
+            .post('/api/users')
+            .send(user)
+    }
+
 })
 
 describe('when there are some blogs save initially', () => {
@@ -72,9 +83,10 @@ describe('GET', () => {
 })
 describe('POST', () => {
     test('valid blog', async () => {
+        const token = await getToken('Nobody', '123')    
         const blogsAtStart = await blogsInDb();
         const blogToAdd =    {
-            title: "Arica it's nice",
+            title: "Arica is nice",
             author: "El Morro",
             url: "https://arica.cl",
             likes: 10,
@@ -82,6 +94,7 @@ describe('POST', () => {
         
         await api
         .post('/api/blogs')
+        .set('Authorization', `Bearer ${token}`)
         .send(blogToAdd)
         .expect(201)
         
@@ -90,9 +103,10 @@ describe('POST', () => {
         assert.strictEqual(blogsAtEnd.length - 1, blogsAtStart.length)    
         //check the are the same
         const titles = blogsAtEnd.map(blog => blog.title)
-        assert(titles.includes("Arica it's nice"))             
+        assert(titles.includes("Arica is nice"))             
     })
     test('likes field set it in zero when was missed', async () => {
+        const token = await getToken('Nobody', '123')
         const blogsAtStart = await blogsInDb();
         const blogToAdd =    {
             title: "Arica it's nice",
@@ -101,6 +115,7 @@ describe('POST', () => {
         }
         const response = await api
         .post('/api/blogs')
+        .set('Authorization', `Bearer ${token}`)
         .send(blogToAdd)
         .expect(201)
         
@@ -111,6 +126,7 @@ describe('POST', () => {
         assert.strictEqual(0, response.body.likes)
     })
     test('missing title field', async () => {
+        const token = await getToken('Nobody', '123')
         const blogToAdd =    {
             author: "El Morro", //likes missed
             url: "https://arica.cl", 
@@ -118,11 +134,13 @@ describe('POST', () => {
         }
         await api
         .post('/api/blogs')
+        .set('Authorization', `Bearer ${token}`)
         .send(blogToAdd)
         .expect(400) //bad request
         
     })
     test('missing url field', async () => {
+        const token = await getToken('Nobody', '123')
         const blogToAdd =    {
             title: "Arica it's nice",
             author: "El Morro", //url missed
@@ -131,19 +149,38 @@ describe('POST', () => {
         await api
         .post('/api/blogs')
         .send(blogToAdd)
+        .set('Authorization', `Bearer ${token}`)
         .expect(400) //bad request
         
     })
 })
 
 describe('DELETE', () => {
-    test('one existing blog', async () => {
-        const blogsAtStart = await blogsInDb();
-        const blogToDelete = blogsAtStart[0]
-        const idBlogToDelete = blogToDelete.id
+    test('A user deletes a blog he created ', async () => {
+        //first we add a blog with the user, this is necessary cause intialBlogs don't have users
+        const token = await getToken('Nobody', '123')    
+        const blogToAdd =    {
+            title: "Arica is nice",
+            author: "El Morro",
+            url: "https://arica.cl",
+            likes: 10,
+        }
         
         await api
+        .post('/api/blogs')
+        .set('Authorization', `Bearer ${token}`)
+        .send(blogToAdd)
+        .expect(201)
+
+
+        const blogsAtStart = await blogsInDb();
+        const blogToDelete = blogsAtStart.find(blog => blog.title === 'Arica is nice') //the newly added
+        const idBlogToDelete = blogToDelete.id
+        
+        //deleted the blog
+        await api
             .delete(`/api/blogs/${idBlogToDelete}`)
+            .set('Authorization', `Bearer ${token}`)
             .expect(200)
     
         const blogsAtEnd = await blogsInDb();
@@ -155,19 +192,39 @@ describe('DELETE', () => {
         assert.strictEqual(deletedBlog, undefined);                           
     
     })
-    test('one non-existing blog', async () => {
-        const validNonexistingId = await nonExistingId()
+    test('A user tries to delete a blog he did not created ', async () => {
+        //first we add a blog with the user, this is necessary cause intialBlogs don't have users
+        const token = await getToken('Nobody', '123')    
+        const blogToAdd =    {
+            title: "Arica is nice",
+            author: "El Morro",
+            url: "https://arica.cl",
+            likes: 10,
+        }
+        
         await api
-          .delete(`/api/blogs/${validNonexistingId}`)
-          .expect(404)                          
-    
-    })
-    test('one invalid id blog', async () => {
-        const invalidId = '5a3d5da59070081a82a3445'
-    
+        .post('/api/blogs')
+        .set('Authorization', `Bearer ${token}`)
+        .send(blogToAdd)
+        .expect(201)
+
+
+        const blogsAtStart = await blogsInDb();
+        const blogToDelete = blogsAtStart.find(blog => blog.title === 'Arica is nice') //the newly added
+        const idBlogToDelete = blogToDelete.id
+        
+        //deleted the blog, but with other token
+        const anotherToken = await getToken("Nobody 2", "123")
+        // console.log("the anoter token is ", anotherToken)
         await api
-          .delete(`/api/blogs/${invalidId}`)
-          .expect(400)                         
+            .delete(`/api/blogs/${idBlogToDelete}`)
+            .set('Authorization', `Bearer ${anotherToken}`)
+            .expect(401)
+    
+        const blogsAtEnd = await blogsInDb();
+        //check the is the same amount
+        assert.strictEqual(blogsAtEnd.length, blogsAtStart.length)                         
+    
     })
 })
 describe('PUT', () => {
@@ -228,4 +285,4 @@ test('unique identifiers are called id instead of _id ', async () => {
 
 after(async () => {
     await mongoose.connection.close()
-  })
+})
