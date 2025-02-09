@@ -4,13 +4,12 @@ const supertest = require('supertest')
 const app = require('../app')
 const assert = require('node:assert')
 const User = require('../models/user')
+const Blog = require('../models/blog')
 const {usersInDb, nonExistingId, initialUsers} = require('./helper_user_api')
 
 const api = supertest(app)
 
 beforeEach(async () => {
-    await User.deleteMany({})
-
     //must have this way to generate the passwordHash
     for (let user of initialUsers) {
         await api

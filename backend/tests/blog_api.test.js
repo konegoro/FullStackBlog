@@ -105,6 +105,24 @@ describe('POST', () => {
         const titles = blogsAtEnd.map(blog => blog.title)
         assert(titles.includes("Arica is nice"))             
     })
+    test('Token missing', async () => {
+        const blogsAtStart = await blogsInDb();
+        const blogToAdd =    {
+            title: "Arica is nice",
+            author: "El Morro",
+            url: "https://arica.cl",
+            likes: 10,
+        }
+        
+        await api
+        .post('/api/blogs')
+        .send(blogToAdd)
+        .expect(401)
+        
+        //check the length is the same
+        const blogsAtEnd = await blogsInDb();
+        assert.strictEqual(blogsAtEnd.length, blogsAtStart.length)    
+    })
     test('likes field set it in zero when was missed', async () => {
         const token = await getToken('Nobody', '123')
         const blogsAtStart = await blogsInDb();

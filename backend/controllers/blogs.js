@@ -2,6 +2,7 @@ const blogsRouter = require('express').Router()
 const Blog = require('../models/blog')
 const User = require('../models/user')
 const jwt = require('jsonwebtoken')
+const middleware = require('../utils/middleware');
 
 blogsRouter.get('/', async (request, response) =>  {
   const blogs = await Blog.find({}).populate('user', { username: 1, name: 1 })
@@ -17,14 +18,9 @@ blogsRouter.get('/:id', async (request, response) =>  {
   }
 })
 
-blogsRouter.post('/', async (request, response) => {
-  //verify that the Token matches with the SECRET variable, and if the token it's rigth, will have the user's id and
-  //and the username
-  const decodedToken = jwt.verify(request.token, process.env.SECRET) //request.token is possible cause the tokenExtractor method in the middleware 
-  if (!decodedToken.id) {
-    return response.status(401).json({ error: 'token invalid' })
-  }
-  const user = await User.findById(decodedToken.id)
+blogsRouter.post('/', middleware.userExtractor, async (request, response) => {
+  // get user from request object
+  const user = request.user
 
   const body = request.body
 
@@ -52,14 +48,9 @@ blogsRouter.post('/', async (request, response) => {
   response.status(201).json(savedBlog)
 })
 
-blogsRouter.delete('/:id', async (request, response) => {
-  //verify that the Token matches with the SECRET variable, and if the token it's rigth, will have the user's id and
-  //and the username
-  const decodedToken = jwt.verify(request.token, process.env.SECRET) //request.token is possible cause the tokenExtractor method in the middleware 
-  if (!decodedToken.id) {
-    return response.status(401).json({ error: 'token invalid' })
-  }
-  const user = await User.findById(decodedToken.id)
+blogsRouter.delete('/:id', middleware.userExtractor, async (request, response) => {
+  // get user from request object
+  const user = request.user
 
   // console.log("the user id is : ", user.id.toString())
   const blog = await Blog.findById(request.params.id)

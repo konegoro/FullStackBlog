@@ -26,7 +26,9 @@ app.use(express.json()) //this allows that request.body has the correct data
 app.use(middleware.requestLogger)
 app.use(middleware.tokenExtractor) //to extract the token in the request
 
-app.use('/api/blogs', blogsRouter)
+//blogsRouter use userExtractor inside, which needs tokenExtractor, so the order must be this
+//tokenExtractor before blogsRouter
+app.use('/api/blogs', blogsRouter) 
 app.use('/api/users', usersRouter)
 app.use('/api/login', loginRouter)
 
