@@ -13,6 +13,7 @@ const Blog = ({blog, blogs, setBlogs, setErrorMessage, user}) => {
   useEffect(() => {
     const checkCanDelete = async () => {
       try {
+        //I coud have modify the login response, adding the user's id, but is more secure verify with the token
         const response = await tokenService.getId(user.token);
         const userId = response.data.userId;
         setCanDelete(userId === blog.user.id);
@@ -21,7 +22,7 @@ const Blog = ({blog, blogs, setBlogs, setErrorMessage, user}) => {
       }
     };
     checkCanDelete();
-  }, [user]);
+  }, [user, blog]);
   //------------Style----------------
   const blogStyle = {
     border: '1px solid black',
@@ -42,20 +43,6 @@ const Blog = ({blog, blogs, setBlogs, setErrorMessage, user}) => {
   };
 
   //-----------Auxiliar functions------------------
-  const canDeleteFunction = async (blog) => {
-    console.log("token is : ", user.token)
-    const response = await tokenService.getId(user.token)
-    const userId = response.data.userId
-    console.log("The user id is : ", userId)
-    console.log("blog' user is : ", blog.user.id)
-    if (userId === blog.user.id) {
-      return true
-    }
-    else {
-      return false
-    }
-  }
-
   const updateLikes = async (blog) => {
     const blogObject = {
       user: blog.user.id,
@@ -79,18 +66,25 @@ const Blog = ({blog, blogs, setBlogs, setErrorMessage, user}) => {
   }
 
   const removeBlog = async (blog) => {
+    const confirmDelete = window.confirm(`Are you sure you want to delete "${blog.title}" by ${blog.author}?`);
+    
+    if (!confirmDelete) {
+      return; // Exit the function if the user cancels
+    }
+  
     try {
-      //DELETE THE BLOG
-      await blogService.remove(blog.id)
-      //Update the blogs in the frontend
-      const newBlogs = blogs.filter(b => b.id !== blog.id)
-      setBlogs(newBlogs)
+      // DELETE THE BLOG
+      await blogService.remove(blog.id);
+  
+      // Update the blogs in the frontend
+      const newBlogs = blogs.filter(b => b.id !== blog.id);
+      setBlogs(newBlogs);
+    } catch (exception) {
+      setErrorMessage("Something went wrong: " + exception.message);
+      setTimeout(() => setErrorMessage(null), timerMessages);
     }
-    catch (exception) {
-      setErrorMessage("Something went wrong : ", exception)
-      setTimeout(() => setErrorMessage(null), timerMessages)
-    }
-  }
+  };
+  
 
   console.log("canDetele is : ", canDelete)
   return (
@@ -109,7 +103,8 @@ const Blog = ({blog, blogs, setBlogs, setErrorMessage, user}) => {
         <p>likes {blog.likes} <button onClick={() => updateLikes(blog)}> Like </button> </p>
         <p>{blog.author}</p>
         {canDelete ? 
-        <button style={deleteButtonStyle} onClick={() => removeBlog(blog)}> remove </button>
+        <button style={deleteButtonStyle} onClick={() => {
+                                                          removeBlog(blog)}}> remove </button>
         :
         null}
       </div>
