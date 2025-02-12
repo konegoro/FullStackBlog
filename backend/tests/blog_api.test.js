@@ -175,7 +175,7 @@ describe('POST', () => {
 
 describe('DELETE', () => {
     test('A user deletes a blog he created ', async () => {
-        //first we add a blog with the user, this is necessary cause intialBlogs don't have users
+        //first we add a blog with the user, this is necessary cause intialBlogs don't have their users
         const token = await getToken('Nobody', '123')    
         const blogToAdd =    {
             title: "Arica is nice",
@@ -207,7 +207,12 @@ describe('DELETE', () => {
         //check that the deleted one is the correct
         // Ensure the deleted blog no longer exists in the database
         const deletedBlog = blogsAtEnd.find(b => b.id === idBlogToDelete);
-        assert.strictEqual(deletedBlog, undefined);                           
+        assert.strictEqual(deletedBlog, undefined);
+        
+        //Ensure that the user do not have the id in their blogs
+        const BlogsFromUser = await User.findOne({ username: 'Nobody' })
+        assert.strictEqual(BlogsFromUser.blogs.includes(idBlogToDelete), false)
+        
     
     })
     test('A user tries to delete a blog he did not created ', async () => {

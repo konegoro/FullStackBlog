@@ -58,6 +58,13 @@ blogsRouter.delete('/:id', middleware.userExtractor, async (request, response) =
   if (user.id.toString() !== blog.user.toString()){
     return response.status(401).json({ error: 'Only the user who created the blog can delete it' })
   }
+  //deleted the blog id from the user in the field blogs, this is just in case, because with population
+  //the deleted blog should not appear in the user's blogs
+  // console.log("user blogs was: ", user.blogs)
+  user.blogs = user.blogs.filter(b => b.toString() !== request.params.id)
+  await user.save(); // <---- Save the updated user document
+  // console.log("user blogs is now : ", user.blogs)
+  //deleted the blog from the database
   const deletedBlog = await Blog.findByIdAndDelete(request.params.id)
   if (deletedBlog){
     response.json(deletedBlog)
@@ -72,13 +79,14 @@ blogsRouter.put('/:id', async (request, response, next) => {
   const body = request.body
 
   const blog = {
+    user: body.user,
     title: body.title,
     author: body.author,
     url: body.url,
     likes: body.likes
   }
 
-  const updatedblog = await Blog.findByIdAndUpdate(request.params.id, blog, { new: true })
+  const updatedblog = await Blog.findByIdAndUpdate(request.params.id, blog, { new: true }).populate('user', { username: 1, name: 1 })
   if (updatedblog) {
     response.json(updatedblog)
   }
