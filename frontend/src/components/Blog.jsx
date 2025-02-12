@@ -1,28 +1,29 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react'
 import blogService from '../services/blogs'
 import tokenService from '../services/token'
+import PropTypes from 'prop-types'
 
 const timerMessages = 5000
 
-const Blog = ({blog, blogs, setBlogs, setErrorMessage, user}) => {
+const Blog = ({ blog, blogs, setBlogs, setErrorMessage, user }) => {
   const [hide, sethide] = useState(true)
-  const [canDelete, setCanDelete] = useState(false); // Estado para saber si se puede borrar
+  const [canDelete, setCanDelete] = useState(false) // Estado para saber si se puede borrar
 
   //------------------------Hooks.-------------------
   useEffect(() => {
     const checkCanDelete = async () => {
       try {
         //I coud have modify the login response, adding the user's id, but is more secure verify with the token
-        const response = await tokenService.getId(user.token);
-        const userId = response.data.userId;
-        setCanDelete(userId === blog.user.id);
+        const response = await tokenService.getId(user.token)
+        const userId = response.data.userId
+        setCanDelete(userId === blog.user.id)
       } catch (error) {
-        console.error("Error checking delete permission:", error);
+        console.error('Error checking delete permission:', error)
       }
-    };
-    checkCanDelete();
-  }, [user, blog]);
+    }
+    checkCanDelete()
+  }, [user, blogs, blog])
   //------------Style----------------
   const blogStyle = {
     border: '1px solid black',
@@ -30,7 +31,7 @@ const Blog = ({blog, blogs, setBlogs, setErrorMessage, user}) => {
     marginBottom: '10px',
     maxWidth: '500px',
     fontFamily: 'Arial, sans-serif',
-  };
+  }
 
   const deleteButtonStyle = {
     backgroundColor: '#ffcccc', // Light red
@@ -40,7 +41,7 @@ const Blog = ({blog, blogs, setBlogs, setErrorMessage, user}) => {
     borderRadius: '5px', // Rounded corners
     cursor: 'pointer',
     fontWeight: 'bold',
-  };
+  }
 
   //-----------Auxiliar functions------------------
   const updateLikes = async (blog) => {
@@ -60,57 +61,64 @@ const Blog = ({blog, blogs, setBlogs, setErrorMessage, user}) => {
       setBlogs(newBlogs)
     }
     catch (exception) {
-      setErrorMessage("Something went wrong : ", exception.message)
+      setErrorMessage('Something went wrong : ', exception.message)
       setTimeout(() => setErrorMessage(null), timerMessages)
     }
   }
 
   const removeBlog = async (blog) => {
-    const confirmDelete = window.confirm(`Are you sure you want to delete "${blog.title}" by ${blog.author}?`);
-    
+    const confirmDelete = window.confirm(`Are you sure you want to delete "${blog.title}" by ${blog.author}?`)
+
     if (!confirmDelete) {
-      return; // Exit the function if the user cancels
+      return // Exit the function if the user cancels
     }
-  
+
     try {
       // DELETE THE BLOG
-      await blogService.remove(blog.id);
-  
-      // Update the blogs in the frontend
-      const newBlogs = blogs.filter(b => b.id !== blog.id);
-      setBlogs(newBlogs);
-    } catch (exception) {
-      setErrorMessage("Something went wrong: " + exception.message);
-      setTimeout(() => setErrorMessage(null), timerMessages);
-    }
-  };
-  
+      await blogService.remove(blog.id)
 
-  console.log("canDetele is : ", canDelete)
+      // Update the blogs in the frontend
+      const newBlogs = blogs.filter(b => b.id !== blog.id)
+      setBlogs(newBlogs)
+    } catch (exception) {
+      setErrorMessage('Something went wrong: ' + exception.message)
+      setTimeout(() => setErrorMessage(null), timerMessages)
+    }
+  }
+
+
+  console.log('canDetele is : ', canDelete)
   return (
     <div>
       <button onClick={() => sethide(!hide)}>
-          {hide ? 'view' : 'hide'}
+        {hide ? 'view' : 'hide'}
       </button>
-      {hide ? 
-      <div style={blogStyle}>
-        {blog.title} {blog.author}
-      </div>
-      : 
-      <div style={blogStyle}> 
-        <p>{blog.title}</p>
-        <p>{blog.url}</p>
-        <p>likes {blog.likes} <button onClick={() => updateLikes(blog)}> Like </button> </p>
-        <p>{blog.author}</p>
-        {canDelete ? 
-        <button style={deleteButtonStyle} onClick={() => {
-                                                          removeBlog(blog)}}> remove </button>
+      {hide ?
+        <div style={blogStyle}>
+          {blog.title} {blog.author}
+        </div>
         :
-        null}
-      </div>
+        <div style={blogStyle}>
+          <p>{blog.title}</p>
+          <p>{blog.url}</p>
+          <p>likes {blog.likes} <button onClick={() => updateLikes(blog)}> Like </button> </p>
+          <p>{blog.author}</p>
+          {canDelete ?
+            <button style={deleteButtonStyle} onClick={() => removeBlog(blog)}> remove </button>
+            :
+            null}
+        </div>
       }
-    </div>  
+    </div>
   )
+}
+
+Blog.propTypes = {
+  blog: PropTypes.object.isRequired,
+  blogs: PropTypes.array.isRequired,
+  setBlogs: PropTypes.func.isRequired,
+  setErrorMessage: PropTypes.func.isRequired,
+  user: PropTypes.object.isRequired
 }
 
 export default Blog

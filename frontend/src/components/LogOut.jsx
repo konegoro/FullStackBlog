@@ -1,12 +1,12 @@
-const LogOut = ({setUser}) => {
-    return (
+const LogOut = ({ setUser }) => {
+  return (
     <div>
-        <button onClick={() => {window.localStorage.removeItem("loggedNoteappUser")
-                                setUser(null)}}>
+      <button onClick={() => {window.localStorage.removeItem('loggedNoteappUser')
+        setUser(null)}}>
             Logout
-        </button>
+      </button>
     </div>
-    )
-} 
+  )
+}
 
 export default LogOut
