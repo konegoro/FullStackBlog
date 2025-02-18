@@ -307,5 +307,8 @@ test('unique identifiers are called id instead of _id ', async () => {
 })
 
 after(async () => {
+    await Blog.deleteMany({})
+    //to POST the blogs with a user wee need initialize the Users
+    await User.deleteMany({})
     await mongoose.connection.close()
 })

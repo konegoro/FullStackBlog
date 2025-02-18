@@ -1,21 +1,49 @@
-const BlogForm = ({ addBlog, newTitle, newAuthor, newURL, handelTitleChange, handelAuthorChange, handelURLChange }) => (
-  <form onSubmit={addBlog} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-    <label>
-        Title:
-      <input value={newTitle} onChange={handelTitleChange} />
-    </label>
-    <label>
-        Author:
-      <input value={newAuthor} onChange={handelAuthorChange} />
-    </label>
+import { useState} from 'react'
 
-    <label>
-        URL:
-      <input value={newURL} onChange={handelURLChange} />
-    </label>
+const BlogForm = ({ createBlog, setSuccessMessage, setErrorMessage}) => {
+  const [newTitle, setNewTitle] = useState('')
+  const [newAuthor, setNewAuthor] = useState('')
+  const [newURL, setNewURL] = useState('')
 
-    <button type="submit" style={{ width: '100px', alignSelf: 'left' }}>Create</button>
-  </form>
-)
+  const addBlog = async (event) => {
+    event.preventDefault()
+    const blogObject = {
+      title: newTitle,
+      author: newAuthor,
+      url: newURL,
+    }
+    try {
+      await createBlog(blogObject)
+      setNewTitle('')
+      setNewAuthor('')
+      setNewURL('')
+      setSuccessMessage(`a new blog created`)
+      setTimeout(() => setSuccessMessage(null), 5000)
+    } catch(exception) {
+      setErrorMessage(exception.message)
+      setTimeout(() => setErrorMessage(null), 5000)
+    }
+  }
+
+  return (
+    <form onSubmit={addBlog} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      <label>
+          Title:
+        <input value={newTitle} onChange={event => setNewTitle(event.target.value)} id='title-input'/>
+      </label>
+      <label>
+          Author:
+        <input value={newAuthor} onChange={event => setNewAuthor(event.target.value)} id='author-input'/>
+      </label>
+
+      <label>
+          URL:
+        <input value={newURL} onChange={event => setNewURL(event.target.value)} id='url-input'/>
+      </label>
+
+      <button className="createButton" type="submit" style={{ width: '100px', alignSelf: 'left' }}>Create</button>
+    </form>
+  )
+}
 
 export default BlogForm

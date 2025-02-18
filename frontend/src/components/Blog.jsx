@@ -9,21 +9,31 @@ const timerMessages = 5000
 const Blog = ({ blog, blogs, setBlogs, setErrorMessage, user }) => {
   const [hide, sethide] = useState(true)
   const [canDelete, setCanDelete] = useState(false) // Estado para saber si se puede borrar
+  console.log("canDeleteDefautl is : ", blog.canDeleteDefault)
+  console.log("user is : ", user)
 
-  //------------------------Hooks.-------------------
+  //----------------checkCanDelete-----------------
   useEffect(() => {
     const checkCanDelete = async () => {
+      if (blog.canDeleteDefault) {
+        setCanDelete(blog.canDeleteDefault);
+        blog.canDeleteDefault = null
+      }
       try {
-        //I coud have modify the login response, adding the user's id, but is more secure verify with the token
-        const response = await tokenService.getId(user.token)
-        const userId = response.data.userId
-        setCanDelete(userId === blog.user.id)
+        const response = await tokenService.getId(user.token);
+        const userId = response.data.userId;
+        console.log("userId from the token : ", userId)
+        console.log("user from the blog", blog.user.id)
+        setCanDelete(userId === blog.user.id);
       } catch (error) {
-        console.error('Error checking delete permission:', error)
+        console.error('Error checking delete permission:', error);
+        setCanDelete(false); // Fail-safe: Don't allow delete on error
       }
     }
-    checkCanDelete()
-  }, [user, blogs, blog])
+  
+    checkCanDelete();
+  }, [user, blog, blogs]); // Runs when user, blogs, or blog changes
+  
   //------------Style----------------
   const blogStyle = {
     border: '1px solid black',
@@ -86,22 +96,21 @@ const Blog = ({ blog, blogs, setBlogs, setErrorMessage, user }) => {
     }
   }
 
-
-  console.log('canDetele is : ', canDelete)
+  console.log("canDelete is : ", canDelete)
   return (
-    <div>
-      <button onClick={() => sethide(!hide)}>
+    <div className='divBlog'>
+      <button className="ShowButton" onClick={() => {sethide(!hide)}}>
         {hide ? 'view' : 'hide'}
       </button>
       {hide ?
-        <div style={blogStyle}>
+        <div className="blog" style={blogStyle}>
           {blog.title} {blog.author}
         </div>
         :
         <div style={blogStyle}>
           <p>{blog.title}</p>
           <p>{blog.url}</p>
-          <p>likes {blog.likes} <button onClick={() => updateLikes(blog)}> Like </button> </p>
+          <p>likes {blog.likes} <button className="likesButton" onClick={() => updateLikes(blog)}> Like </button> </p>
           <p>{blog.author}</p>
           {canDelete ?
             <button style={deleteButtonStyle} onClick={() => removeBlog(blog)}> remove </button>

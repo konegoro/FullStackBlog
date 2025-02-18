@@ -24,3 +24,10 @@ frontend/db.json
 # Ignorar solo node_modules y dist en el backend
 backend/node_modules/
 backend/.env
+
+# Playwright
+node_modules/
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/

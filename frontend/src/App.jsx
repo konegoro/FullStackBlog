@@ -10,9 +10,6 @@ import { SuccessfulMessage, ErrorMessage } from './components/Messages'
 
 const App = () => {
   const [blogs, setBlogs] = useState([])
-  const [newTitle, setNewTitle] = useState('')
-  const [newAuthor, setNewAuthor] = useState('')
-  const [newURL, setNewURL] = useState('')
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [user, setUser] = useState(null)
@@ -70,41 +67,14 @@ const App = () => {
       setTimeout(() => setErrorMessage(null), timerMessages)
     }
   }
-
-  const addBlog = async (event) => {
-    event.preventDefault()
-    const blogObject = {
-      title: newTitle,
-      author: newAuthor,
-      url: newURL,
-    }
-    try {
-      const returnedBlog = await blogService.create(blogObject)
-      // Ensure the new blog includes the user field
-      const newBlogWithUser = { ...returnedBlog, user: user }
-      setBlogs(blogs.concat(newBlogWithUser))
-      setNewTitle('')
-      setNewAuthor('')
-      setNewURL('')
-      setSuccessMessage(`a new blog ${newTitle} by ${newAuthor}`)
-      setTimeout(() => setSuccessMessage(null), timerMessages)
-    } catch(exception) {
-      setErrorMessage(exception.message)
-      setTimeout(() => setErrorMessage(null), timerMessages)
-    }
-  }
-
-  const handelTitleChange = (event) => {
-    console.log('New Title now is : ', event.target.value)
-    setNewTitle(event.target.value)
-  }
-  const handelAuthorChange = (event) => {
-    console.log('New Author now is : ', event.target.value)
-    setNewAuthor(event.target.value)
-  }
-  const handelURLChange = (event) => {
-    console.log('New URL now is : ', event.target.value)
-    setNewURL(event.target.value)
+  
+  const addBlog = async (blogObject) => {
+    const returnedBlog = await blogService.create(blogObject);
+  
+    // Attach the current user directly to the new blog
+    returnedBlog.user = user;
+  
+    setBlogs(blogs.concat(returnedBlog));
   }
 
   //-------------------------------HTML-------------------------
@@ -119,9 +89,8 @@ const App = () => {
           <p>{user.name} logged-in</p>
           <LogOut setUser={setUser} />
           <h2>Create New Blog</h2>
-          <Togglable buttonLabel="new note">
-            <BlogForm addBlog={addBlog} newTitle={newTitle} newAuthor={newAuthor} newURL={newURL} handelTitleChange={handelTitleChange}
-              handelAuthorChange={handelAuthorChange} handelURLChange={handelURLChange}/>
+          <Togglable buttonLabel="new blog">
+            <BlogForm createBlog={addBlog} setSuccessMessage={setSuccessMessage} setErrorMessage={setErrorMessage}/>
           </Togglable>
           <h2>blogs</h2>
           {sortBlogs.map(blog =>

@@ -42,7 +42,7 @@ blogsRouter.post('/', middleware.userExtractor, async (request, response) => {
   }
 
   const savedBlog = await blog.save()
-  user.blogs = user.blogs.concat(savedBlog.id) //add the note to the user with concat
+  user.blogs = user.blogs.concat(savedBlog.id) //add the blog to the user with concat
   await user.save() //save the data
 
   response.status(201).json(savedBlog)
